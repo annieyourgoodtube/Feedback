@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中藥局SA9工作點回饋</title>
+<style>
+  :root{
+    --bg:#143a44;--card:#ffffff;--ink:#1b2b33;--muted:#6b8089;--line:#dde6e8;
+    --primary:#15616d;--primary-dk:#0f4a54;--primary-tint:#e5f0f1;
+    --ok:#2e7d5b;--no:#8896a0;--warn:#d63c3c;
+    --sun:#FFD23F;--sun-dk:#F3BE1B;--sun-ink:#4a3a0c;--sun-tint:#fff3cf;
+    --shadow:0 1px 2px rgba(21,97,109,.06),0 8px 24px rgba(21,97,109,.08);
+    --wName:176px;--wSeg:300px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:16px;
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:960px;margin:0 auto;padding:26px 24px 60px}
+  header.top{padding:4px 2px 14px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+  .head-text{flex:1 1 320px;min-width:0}
+  .mascot{flex:0 0 auto}
+  .mascot svg,.mascot img{width:120px;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.28));animation:bob 3s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  @media(prefers-reduced-motion:reduce){.mascot svg{animation:none}}
+  @media(max-width:720px){.mascot svg,.mascot img{width:96px}}
+  header.top h1{font-size:clamp(24px,4vw,32px);margin:0;font-weight:800;line-height:1.25;letter-spacing:.01em;color:#eef6f7}
+  header.top .intro{margin-top:8px}
+  header.top .intro p{margin:3px 0;color:#aecacf;font-size:14.5px;line-height:1.55}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;
+    box-shadow:var(--shadow);padding:16px 20px;margin:14px 0}
+  .meta{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+  .mfield{display:flex;align-items:center;gap:10px}
+  .mfield label{margin:0;white-space:nowrap;font-size:13px}
+  .meta input[type=text]{width:210px}
+  label{display:block;font-size:13px;font-weight:700;margin:0 0 6px}
+  input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+    font:inherit;background:#fbfdfd;outline:none;transition:.15s}
+  input[type=text]:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-tint)}
+  .locked-date{padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+    background:var(--primary-tint);color:var(--primary-dk);font-weight:800;
+    font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px}
+  .locked-date svg{width:15px;height:15px;flex:0 0 15px;opacity:.7}
+
+  .legend{font-size:13px;color:var(--muted);line-height:1.9;padding:2px 2px 10px;border-bottom:1px solid var(--line);margin-bottom:4px}
+  .legend b{color:var(--ink)}
+  .legend .d{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:3px;vertical-align:middle}
+
+  /* 橫向單列項目 */
+  .q{display:flex;align-items:center;gap:14px;padding:11px 4px;border-top:1px solid var(--line)}
+  .q.colhead{border-top:0;padding:5px 4px 7px;color:var(--muted);font-size:16px;font-weight:800;letter-spacing:.04em}
+  .q.colhead .badge{visibility:hidden}
+  .badge{width:28px;height:28px;flex:0 0 28px;border-radius:10px;background:var(--sun);
+    color:var(--sun-ink);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .badge.empty{background:transparent}
+  .q-name{flex:0 0 var(--wName);font-size:30px;font-weight:800;line-height:1.2}
+  .q-name small{display:block;font-size:14px;color:var(--muted);font-weight:700}
+  .col-name{flex:0 0 var(--wName)}
+  .col-seg{flex:0 0 var(--wSeg)}
+  .col-rest{flex:1 1 auto}
+
+  .seg3{display:flex;flex:0 0 var(--wSeg);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg3 button{flex:1;padding:11px 4px;border:0;background:#fff;font:inherit;font-weight:800;
+    color:var(--muted);cursor:pointer;transition:.12s;font-size:19px;white-space:nowrap}
+  .seg3 button+button{border-left:1px solid var(--line)}
+  .seg3 button[data-v="有"]{color:var(--ok)}
+  .seg3 button[data-v="未完成"]{color:var(--warn)}
+  .seg3 button[data-v="有"].on{background:var(--ok);color:#fff}
+  .seg3 button[data-v="無案件"].on{background:var(--no);color:#fff}
+  .seg3 button[data-v="未完成"].on{background:var(--warn);color:#fff}
+
+  .cnt{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+  .cnt .cl{font-size:13px;font-weight:800;color:var(--ink)}
+  .cnt input{width:60px;text-align:center;padding:7px 6px;border:1px solid var(--line);border-radius:8px;
+    font:inherit;font-weight:800;color:var(--primary-dk);background:#fbfdfd;outline:none;-moz-appearance:textfield}
+  .cnt input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-tint)}
+  .cnt input::-webkit-outer-spin-button,.cnt input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .cnt span{font-size:13px;font-weight:700;color:var(--muted)}
+  .cnt .cl .req{color:var(--warn);font-weight:800}
+  .cnt input::placeholder{color:var(--warn);font-weight:700;font-size:12px}
+  .cnt[hidden]{display:none}
+
+  .q-note{flex:1 1 220px;min-width:170px;padding:8px 11px;
+    border:1px solid var(--line);border-radius:9px;font:inherit;background:#fbfdfd;outline:none}
+  .q-note:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-tint)}
+  .q-note[hidden]{display:none}
+
+  .summary{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;
+    font-size:14px;font-weight:700;color:var(--primary-dk);padding:2px 4px 8px}
+  .summary .sum-right{margin-top:2px;font-size:21px;line-height:1.4}
+  .summary .sum-right b{font-size:24px}
+  .summary .sum-left{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+  .summary .sum-title{font-size:20px;font-weight:800;color:var(--primary-dk);letter-spacing:.02em}
+  .summary b{font-variant-numeric:tabular-nums;font-size:20px}
+  .summary .now{font-weight:800;color:var(--sun-ink);font-variant-numeric:tabular-nums;
+    font-size:16px;background:var(--sun-tint);padding:5px 13px;border-radius:10px}
+  .summary .warn{color:var(--warn)}
+  .submit{padding:16px 44px;border:0;border-radius:16px;background:var(--sun);
+    color:var(--sun-ink);font-size:clamp(24px,4.5vw,32px);font-weight:800;cursor:pointer;
+    box-shadow:0 6px 16px rgba(255,190,27,.35);transition:.15s}
+  .submit:hover{background:var(--sun-dk)}
+  .submit:disabled{opacity:.6;cursor:progress}
+  .submit-row{display:flex;justify-content:flex-end}
+  .toast{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:14px;font-weight:600;display:none}
+  .toast.ok{display:block;background:#e6f4ec;color:var(--ok);border:1px solid #bfe3cf}
+  .toast.err{display:block;background:#fdecec;color:#b3261e;border:1px solid #f4c7c3}
+  .modal{position:fixed;inset:0;background:rgba(15,40,46,.55);backdrop-filter:blur(3px);
+    display:none;align-items:center;justify-content:center;z-index:999;padding:20px}
+  .modal.show{display:flex;animation:fadeIn .18s ease}
+  .modal-box{background:#fff;border-radius:28px;padding:clamp(32px,5vw,52px) clamp(34px,6vw,64px);
+    text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.4);max-width:92vw;
+    animation:pop .3s cubic-bezier(.2,.9,.3,1.25)}
+  .modal-check{width:clamp(78px,12vw,104px);height:clamp(78px,12vw,104px);margin:0 auto 22px;
+    border-radius:50%;background:var(--ok);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 20px rgba(46,125,91,.4)}
+  .modal-check svg{width:52%;height:52%;stroke:#fff;stroke-width:4.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .modal-text{font-size:clamp(28px,5.2vw,44px);font-weight:800;color:var(--primary-dk);letter-spacing:.05em;line-height:1.3}
+  .modal-hint{margin-top:14px;font-size:14px;color:var(--muted);font-weight:600}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes pop{from{transform:scale(.82);opacity:0}to{transform:scale(1);opacity:1}}
+  pre.preview{background:#0f2b30;color:#cfeef0;border-radius:10px;padding:14px;overflow:auto;
+    font-size:12px;line-height:1.5;margin-top:12px;display:none}
+  footer.foot{text-align:center;margin-top:38px;padding:6px 0 4px;font-size:13px}
+  .foot-org{color:#d9e8ea;font-weight:800;letter-spacing:.16em;font-size:1.5em}
+  .foot-credit{color:#9dbabf;font-weight:600;letter-spacing:.06em;margin-top:7px}
+  .foot-guide{font-size:1.3em}
+  .foot-make{font-size:1em}
+  .foot-rule{position:relative;width:150px;height:1px;background:rgba(255,255,255,.16);margin:18px auto}
+  .foot-rule::before{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;
+    background:#FFD23F;transform:translate(-50%,-50%);box-shadow:0 0 0 4px var(--bg)}
+  .foot-quote{color:#ecd99a;font-size:14px;font-weight:600;letter-spacing:.14em;line-height:1.7}
+  .foot-copy{color:#6f8c91;font-size:11px;letter-spacing:.05em;margin-top:12px}
+
+  @media(max-width:720px){
+    .wrap{padding:22px 16px 56px}
+    .meta{grid-template-columns:1fr;max-width:none}
+    .q{flex-wrap:wrap;gap:8px}
+    .q-name{flex:1 1 auto;font-size:24px}
+    .q-name small{font-size:14px}
+    .seg3{flex:1 1 100%}
+    .seg3 button{font-size:18px;padding:11px 4px}
+    .cnt{flex:0 0 auto}
+    .cnt .cl,.cnt span{font-size:14px}
+    .cnt input{font-size:16px}
+    .q-note{flex:1 1 100%;font-size:15px}
+    .q.colhead{display:none}
+    .legend{font-size:13.5px}
+    header.top .intro p{font-size:14.5px}
+    .submit,.submit-row{width:100%}
+    .submit{width:100%}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="head-text">
+      <h1>中藥局SA9工作點回饋</h1>
+      <div class="intro">
+        <p>1.SA9 當班結束前完成當日各項臨床藥事服務件數填報；隔日補填不列入點值計算。</p>
+        <p>2.每人每日填報一次；選擇「有」者，請填寫實際完成件數。</p>
+        <p>3.選擇「未完成」代表當日有案件，但個人尚未完成。</p>
+        <p>4.系統送出後將自動記錄填報時間；僅當日完成填報者列入會報統計，未回報者當日不計點值。</p>
+        <p>5.請逐筆檢視填報內容，確認件數正確後再送出。如查核與事實不符；所有異常均列入個人當月點值。</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="meta">
+      <div class="mfield">
+        <label>填報時間</label>
+        <div class="locked-date">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+          <span id="clock">—</span>
+        </div>
+      </div>
+      <div class="mfield">
+        <label for="reporter">填報人</label>
+        <input type="text" id="reporter" placeholder="請輸入姓名" autocomplete="name">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="legend">
+      <span class="d" style="background:var(--ok)"></span><b>有</b>＝今日有案件、個人已完成（需填件數）　
+      <span class="d" style="background:var(--no)"></span><b>無案件</b>＝今日無案件　
+      <span class="d" style="background:var(--warn)"></span><b>未完成</b>＝今日有案件、個人未完成（需填件數）
+    </div>
+
+    <div class="q colhead">
+      <div class="badge">·</div>
+      <div class="col-name">填寫項目</div>
+      <div class="col-seg">完成度</div>
+      <div class="col-rest">件數 ／ 備註</div>
+    </div>
+
+    <div class="q">
+      <div class="badge">1</div>
+      <div class="q-name">抗生素</div>
+      <div class="seg3" data-group="abx">
+        <button type="button" data-v="有">有</button><button type="button" data-v="無案件" class="on">無案件</button><button type="button" data-v="未完成">未完成</button>
+      </div>
+      <div class="cnt" id="abxCntBox" hidden><span class="cl">件數</span><input type="number" id="abxCount" min="1" inputmode="numeric"><span>件</span></div>
+      <input class="q-note" id="abxNote" placeholder="備註" hidden>
+    </div>
+
+    <div class="q">
+      <div class="badge">2</div>
+      <div class="q-name">TDM</div>
+      <div class="seg3" data-group="tdm">
+        <button type="button" data-v="有">有</button><button type="button" data-v="無案件" class="on">無案件</button><button type="button" data-v="未完成">未完成</button>
+      </div>
+      <div class="cnt" id="tdmCntBox" hidden><span class="cl">件數</span><input type="number" id="tdmCount" min="1" inputmode="numeric"><span>件</span></div>
+      <input class="q-note" id="tdmNote" placeholder="備註" hidden>
+    </div>
+
+    <div class="q">
+      <div class="badge">3</div>
+      <div class="q-name"><small>多團隊照會</small>新入住</div>
+      <div class="seg3" data-group="mdtNew">
+        <button type="button" data-v="有">有</button><button type="button" data-v="無案件" class="on">無案件</button><button type="button" data-v="未完成">未完成</button>
+      </div>
+      <div class="cnt" id="mdtNewCntBox" hidden><span class="cl">件數</span><input type="number" id="mdtNewCount" min="1" inputmode="numeric"><span>件</span></div>
+      <input class="q-note" id="mdtNewNote" placeholder="備註" hidden>
+    </div>
+
+    <div class="q">
+      <div class="badge empty"></div>
+      <div class="q-name"><small>多團隊照會</small>安寧</div>
+      <div class="seg3" data-group="mdtHospice">
+        <button type="button" data-v="有">有</button><button type="button" data-v="無案件" class="on">無案件</button><button type="button" data-v="未完成">未完成</button>
+      </div>
+      <div class="cnt" id="mdtHospiceCntBox" hidden><span class="cl">件數</span><input type="number" id="mdtHospiceCount" min="1" inputmode="numeric"><span>件</span></div>
+      <input class="q-note" id="mdtHospiceNote" placeholder="備註" hidden>
+    </div>
+
+    <div class="q">
+      <div class="badge">4</div>
+      <div class="q-name">轉床交接班</div>
+      <div class="seg3" data-group="transfer">
+        <button type="button" data-v="有">有</button><button type="button" data-v="無案件" class="on">無案件</button><button type="button" data-v="未完成">未完成</button>
+      </div>
+      <div class="cnt" id="transferCntBox" hidden><span class="cl">件數</span><input type="number" id="transferCount" min="1" inputmode="numeric"><span>件</span></div>
+      <input class="q-note" id="transferNote" placeholder="備註" hidden>
+    </div>
+
+    <div class="q">
+      <div class="badge">5</div>
+      <div class="q-name">交互作用</div>
+      <div class="seg3" data-group="ddi">
+        <button type="button" data-v="有">有</button><button type="button" data-v="無案件" class="on">無案件</button><button type="button" data-v="未完成">未完成</button>
+      </div>
+      <div class="cnt" id="ddiCntBox" hidden><span class="cl">件數</span><input type="number" id="ddiCount" min="1" inputmode="numeric"><span>件</span></div>
+      <input class="q-note" id="ddiNote" placeholder="備註" hidden>
+    </div>
+
+  </div>
+
+  <div class="card" style="padding:12px 20px">
+    <div class="summary">
+      <span class="sum-left"><span class="sum-title">今日回報</span><span class="now" id="clock2">—</span></span>
+      <span class="sum-right">已完成 <b id="yesCount">0</b> 項 · <b id="doneSum">0</b> 件　<span class="warn">未完成 <b id="undoneCount">0</b> 項 · <b id="undoneSum">0</b> 件</span></span>
+    </div>
+    <div class="submit-row"><button class="submit" id="submitBtn">已確認上述資料正確，送出</button></div>
+    <div class="toast" id="toast"></div>
+    <pre class="preview" id="preview"></pre>
+  </div>
+
+  <footer class="foot">
+    <div class="foot-org">台中慈濟醫院｜藥學部</div>
+    <div class="foot-credit foot-guide">指導｜陳綺華 部主任・李雅蓁 主任</div>
+    <div class="foot-credit foot-make">製作｜張雅婷 ✕ 許文馨</div>
+    <div class="foot-rule"></div>
+    <div class="foot-quote">盡多少本分，就得多少本事。</div>
+    <div class="foot-copy">© 2026 台中慈濟醫院藥學部 All Rights Reserved.</div>
+  </footer>
+
+</div>
+
+<div class="modal" id="successModal" role="dialog" aria-live="assertive">
+  <div class="modal-box">
+    <div class="modal-check"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-11"/></svg></div>
+    <div class="modal-text">已送出，感謝填報！</div>
+    <div class="modal-hint">點畫面任一處關閉</div>
+  </div>
+</div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzWWA9l_E0nNZTdnrFbOlIUkYwzCqCEvdsrzwuqrOQu7oyoHqzuyLelxDH7cDxgM3CoNw/exec"; // 已接上 Google 試算表
+
+const $ = id => document.getElementById(id);
+const WD = ["日","一","二","三","四","五","六"];
+const groups = ["abx","tdm","mdtNew","mdtHospice","transfer","ddi"];
+const state = {}; groups.forEach(g=> state[g]="無案件");
+
+function tick(){
+  const d=new Date();
+  const date=d.toLocaleDateString("zh-TW",{year:"numeric",month:"2-digit",day:"2-digit"});
+  const time=d.toLocaleTimeString("zh-TW",{hour12:false});
+  const s=`${date}（${WD[d.getDay()]}） ${time}`;
+  $("clock").textContent=s;
+  const c2=document.getElementById("clock2"); if(c2) c2.textContent=s;
+}
+tick(); setInterval(tick,1000);
+
+document.querySelectorAll(".seg3").forEach(seg=>{
+  const g=seg.dataset.group;
+  seg.querySelectorAll("button").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      seg.querySelectorAll("button").forEach(b=>b.classList.remove("on"));
+      btn.classList.add("on");
+      state[g]=btn.dataset.v;
+      refresh();
+      if(state[g]==="有"||state[g]==="未完成") $(g+"Count").focus();
+    });
+  });
+});
+groups.forEach(g=> $(g+"Count").addEventListener("input",updateSummary));
+groups.forEach(g=> $(g+"Count").placeholder="必填");
+
+function refresh(){
+  groups.forEach(g=>{
+    const hasCase = state[g]==="有"||state[g]==="未完成";
+    const box=$(g+"CntBox");
+    box.hidden = !hasCase;
+    if(hasCase){
+      box.querySelector(".cl").innerHTML = (state[g]==="有" ? "已完成" : "未完成") + ' <span class="req">＊</span>';
+    } else { $(g+"Count").value=""; }
+    const n=$(g+"Note"); n.hidden=!hasCase; if(!hasCase) n.value="";
+  });
+  updateSummary();
+}
+function cnt(g){return (state[g]==="有"||state[g]==="未完成") ? (parseInt($(g+"Count").value)||0) : 0;}
+function updateSummary(){
+  $("yesCount").textContent = groups.filter(g=>state[g]==="有").length;
+  $("doneSum").textContent = groups.filter(g=>state[g]==="有").reduce((s,g)=>s+cnt(g),0);
+  $("undoneCount").textContent = groups.filter(g=>state[g]==="未完成").length;
+  $("undoneSum").textContent = groups.filter(g=>state[g]==="未完成").reduce((s,g)=>s+cnt(g),0);
+}
+
+$("submitBtn").addEventListener("click", submit);
+function collect(){
+  const d=new Date();
+  const item = g => ({value:state[g], count:cnt(g), note:$(g+"Note").value.trim()});
+  return {
+    datetime:d.toISOString(),
+    datetimeLocal:`${d.toLocaleDateString("zh-TW")} ${d.toLocaleTimeString("zh-TW",{hour12:false})}`,
+    reporter:$("reporter").value.trim(),
+    abx:item("abx"),
+    tdm:item("tdm"),
+    mdt:{new:item("mdtNew"),hospice:item("mdtHospice")},
+    transfer:item("transfer"),
+    ddi:item("ddi"),
+    doneCount:groups.filter(g=>state[g]==="有").length,
+    doneSum:groups.filter(g=>state[g]==="有").reduce((s,g)=>s+cnt(g),0),
+    undoneCount:groups.filter(g=>state[g]==="未完成").length,
+    undoneSum:groups.filter(g=>state[g]==="未完成").reduce((s,g)=>s+cnt(g),0)
+  };
+}
+function showToast(msg,type){const t=$("toast");t.textContent=msg;t.className="toast "+type;}
+
+function showSuccess(){
+  const m=$("successModal");
+  m.classList.add("show");
+  clearTimeout(showSuccess._t);
+  showSuccess._t=setTimeout(closeSuccess,2600);
+}
+function closeSuccess(){
+  clearTimeout(showSuccess._t);
+  $("successModal").classList.remove("show");
+  resetForm();
+}
+$("successModal").addEventListener("click",closeSuccess);
+
+async function submit(){
+  const data=collect();
+  if(!data.reporter){showToast("請輸入填報人姓名。","err");$("reporter").focus();return;}
+  const bad=groups.find(g=>(state[g]==="有"||state[g]==="未完成") && (!$(g+"Count").value || parseInt($(g+"Count").value)<1));
+  if(bad){showToast("選「有」或「未完成」的項目請填寫件數（數字）。","err");$(bad+"Count").focus();return;}
+  if(!GAS_URL){
+    $("preview").style.display="block";
+    $("preview").textContent=JSON.stringify(data,null,2);
+    showToast("目前尚未連接資料庫，以下為將送出的資料預覽。","ok");
+    return;
+  }
+  const btn=$("submitBtn");btn.disabled=true;btn.textContent="送出中…";
+  try{
+    await fetch(GAS_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data)});
+    showSuccess();
+  }catch(e){showToast("送出失敗，請確認網路後再試一次。","err");}
+  finally{btn.disabled=false;btn.textContent="已確認上述資料正確，送出";}
+}
+function resetForm(){
+  groups.forEach(g=>{
+    state[g]="無案件";
+    const seg=document.querySelector(`.seg3[data-group="${g}"]`);
+    seg.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v==="無案件"));
+  });
+  refresh();
+}
+</script>
+</body>
+</html>
