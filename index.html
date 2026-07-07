@@ -35,6 +35,8 @@
   .mfield{display:flex;align-items:center;gap:10px}
   .mfield label{margin:0;white-space:nowrap;font-size:13px}
   .meta input[type=text]{width:210px}
+  .mfield.big label{font-size:26px}
+  .mfield.big input[type=text]{font-size:26px;font-weight:800;padding:8px 14px;width:260px}
   label{display:block;font-size:13px;font-weight:700;margin:0 0 6px}
   input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
     font:inherit;background:#fbfdfd;outline:none;transition:.15s}
@@ -123,6 +125,36 @@
   pre.preview{background:#0f2b30;color:#cfeef0;border-radius:10px;padding:14px;overflow:auto;
     font-size:12px;line-height:1.5;margin-top:12px;display:none}
   footer.foot{text-align:center;margin-top:38px;padding:6px 0 4px;font-size:13px}
+  .admin{text-align:center;margin-top:16px}
+  .admin a{display:inline-block;font-size:12px;color:#6f8c91;cursor:pointer;
+    letter-spacing:.06em;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:6px 16px}
+  .admin a:hover{color:#cfe2e5;border-color:rgba(255,255,255,.28)}
+
+  .admin-panel{position:fixed;inset:0;background:rgba(10,30,36,.78);backdrop-filter:blur(3px);
+    display:none;z-index:1000;padding:16px;overflow:auto}
+  .admin-panel.show{display:block}
+  .admin-inner{max-width:1000px;margin:18px auto;background:#fff;border-radius:20px;
+    box-shadow:0 24px 70px rgba(0,0,0,.45);padding:20px 22px}
+  .admin-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .admin-head h2{margin:0;font-size:22px;font-weight:800;color:var(--primary-dk)}
+  .admin-close{border:0;background:#eef2f3;width:38px;height:38px;border-radius:10px;font-size:18px;cursor:pointer;color:var(--ink)}
+  .admin-filter{display:flex;flex-wrap:wrap;align-items:center;gap:12px;background:var(--primary-tint);
+    border-radius:12px;padding:12px 14px;margin-bottom:12px}
+  .admin-filter label{font-size:14px;font-weight:700;color:var(--primary-dk);display:flex;align-items:center;gap:6px}
+  .admin-filter input[type=date]{padding:8px 10px;border:1px solid var(--line);border-radius:9px;font:inherit;background:#fff}
+  .admin-filter button{padding:9px 24px;border:0;border-radius:10px;background:var(--primary);color:#fff;font-weight:800;cursor:pointer}
+  .admin-filter button:hover{background:var(--primary-dk)}
+  .admin-note{font-size:12px;color:var(--muted)}
+  .ad-sec{margin:18px 0 8px;font-size:16px;font-weight:800;color:var(--ink)}
+  table.ad{width:100%;border-collapse:collapse;font-size:14px}
+  table.ad th,table.ad td{border:1px solid var(--line);padding:7px 9px;text-align:center;white-space:nowrap}
+  table.ad th{background:#f2f7f8;font-weight:800;color:var(--primary-dk)}
+  table.ad td.l,table.ad th.l{text-align:left}
+  .ad-fail{color:var(--warn);font-weight:800}
+  .ad-pass{color:var(--ok);font-weight:800}
+  .ad-scroll{overflow:auto;max-height:360px;border:1px solid var(--line);border-radius:10px}
+  .ad-chart{padding:6px 2px 4px}
+  .ad-empty{color:var(--muted);padding:18px;text-align:center}
   .foot-org{color:#d9e8ea;font-weight:800;letter-spacing:.16em;font-size:1.5em}
   .foot-credit{color:#9dbabf;font-weight:600;letter-spacing:.06em;margin-top:7px}
   .foot-guide{font-size:1.3em}
@@ -178,7 +210,7 @@
           <span id="clock">—</span>
         </div>
       </div>
-      <div class="mfield">
+      <div class="mfield big">
         <label for="reporter">填報人</label>
         <input type="text" id="reporter" placeholder="請輸入姓名" autocomplete="name">
       </div>
@@ -280,6 +312,8 @@
     <div class="foot-copy">© 2026 台中慈濟醫院藥學部 All Rights Reserved.</div>
   </footer>
 
+  <div class="admin"><a id="adminLink">主管後台維護</a></div>
+
 </div>
 
 <div class="modal" id="successModal" role="dialog" aria-live="assertive">
@@ -287,6 +321,22 @@
     <div class="modal-check"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-11"/></svg></div>
     <div class="modal-text">已送出，感謝填報！</div>
     <div class="modal-hint">點畫面任一處關閉</div>
+  </div>
+</div>
+
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-inner">
+    <div class="admin-head">
+      <h2>主管後台 · 統計</h2>
+      <button class="admin-close" id="adminClose">✕</button>
+    </div>
+    <div class="admin-filter">
+      <label>起始日 <input type="date" id="adStart"></label>
+      <label>結束日 <input type="date" id="adEnd"></label>
+      <button id="adQuery">查詢</button>
+      <span class="admin-note">六日不列入計算</span>
+    </div>
+    <div id="adminResult"><div class="ad-empty">請選擇日期後按「查詢」。</div></div>
   </div>
 </div>
 
@@ -368,7 +418,7 @@ function showSuccess(){
   const m=$("successModal");
   m.classList.add("show");
   clearTimeout(showSuccess._t);
-  showSuccess._t=setTimeout(closeSuccess,2600);
+  showSuccess._t=setTimeout(closeSuccess,5000);
 }
 function closeSuccess(){
   clearTimeout(showSuccess._t);
@@ -376,6 +426,112 @@ function closeSuccess(){
   resetForm();
 }
 $("successModal").addEventListener("click",closeSuccess);
+
+// ===== 主管後台面板 =====
+const ADMIN_PASS = "boss";   // 可自行更改主管密碼
+
+function toISO_(d){ return d.toLocaleDateString("sv-SE"); }
+function pct_(x){ return (x===null||x===undefined) ? "—" : Math.round(x*100)+"%"; }
+function esc_(s){ return String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+$("adminLink").addEventListener("click",()=>{
+  const p = prompt("主管後台維護 — 請輸入密碼：");
+  if(p===null) return;
+  if(p!==ADMIN_PASS){ alert("密碼錯誤。"); return; }
+  const now=new Date();
+  $("adStart").value = toISO_(new Date(now.getFullYear(),now.getMonth(),1));
+  $("adEnd").value   = toISO_(now);
+  $("adminPanel").classList.add("show");
+  adQuery();
+});
+$("adminClose").addEventListener("click",()=> $("adminPanel").classList.remove("show"));
+$("adQuery").addEventListener("click", adQuery);
+
+function jsonp_(url){
+  return new Promise((resolve,reject)=>{
+    const cb="cb_"+Date.now()+Math.floor(Math.random()*1000);
+    const s=document.createElement("script");
+    const t=setTimeout(()=>{ cleanup(); reject(new Error("timeout")); },15000);
+    function cleanup(){ clearTimeout(t); try{delete window[cb];}catch(e){window[cb]=undefined;} if(s.parentNode) s.parentNode.removeChild(s); }
+    window[cb]=(data)=>{ cleanup(); resolve(data); };
+    s.onerror=()=>{ cleanup(); reject(new Error("load error")); };
+    s.src=url+(url.indexOf("?")>=0?"&":"?")+"callback="+cb;
+    document.body.appendChild(s);
+  });
+}
+
+async function adQuery(){
+  const start=$("adStart").value, end=$("adEnd").value;
+  $("adminResult").innerHTML='<div class="ad-empty">查詢中…</div>';
+  const url=GAS_URL+"?action=report&start="+encodeURIComponent(start)+"&end="+encodeURIComponent(end);
+  try{ renderAdmin(await jsonp_(url)); }
+  catch(e){ $("adminResult").innerHTML='<div class="ad-empty">查詢失敗，請確認後端已重新部署新版本。</div>'; }
+}
+
+function buildBar_(items){
+  const W=700,H=280,mL=44,mR=18,mT=28,mB=52;
+  const plotW=W-mL-mR, plotH=H-mT-mB, n=items.length, gap=16;
+  const bw=(plotW-gap*(n-1))/n;
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:100%;height:auto" xmlns="http://www.w3.org/2000/svg">';
+  [0,25,50,75,100].forEach(g=>{
+    const y=mT+plotH-(g/100)*plotH;
+    svg+='<line x1="'+mL+'" y1="'+y+'" x2="'+(W-mR)+'" y2="'+y+'" stroke="#e2eaec"/>';
+    svg+='<text x="'+(mL-6)+'" y="'+(y+4)+'" font-size="11" fill="#8aa0a5" text-anchor="end">'+g+'%</text>';
+  });
+  items.forEach((it,i)=>{
+    const x=mL+i*(bw+gap);
+    const rate=it.rate==null?0:it.rate;
+    const bh=rate*plotH, y=mT+plotH-bh;
+    const color=it.rate==null?'#c3ced1':(rate>=1?'#2e7d5b':rate>=0.6?'#c9803a':'#d63c3c');
+    svg+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+Math.max(bh,0)+'" rx="5" fill="'+color+'"/>';
+    svg+='<text x="'+(x+bw/2)+'" y="'+(y-6)+'" font-size="12" font-weight="700" fill="#1b2b33" text-anchor="middle">'+(it.rate==null?'—':Math.round(rate*100)+'%')+'</text>';
+    svg+='<text x="'+(x+bw/2)+'" y="'+(mT+plotH+18)+'" font-size="12" fill="#1b2b33" text-anchor="middle">'+esc_(it.name)+'</text>';
+  });
+  svg+='</svg>';
+  return svg;
+}
+
+function renderAdmin(d){
+  if(!d || !d.ok){ $("adminResult").innerHTML='<div class="ad-empty">查詢失敗，請稍後再試。</div>'; return; }
+  let h="";
+  h+='<div class="ad-sec">區間：'+d.start+' ～ '+d.end+'（工作日 '+d.totalWork+' 天，六日不計）</div>';
+
+  h+='<div class="ad-sec">■ 項目統計</div>';
+  h+='<table class="ad"><tr><th class="l">填寫項目</th><th>已完成件數</th><th>未完成件數</th><th>完成率</th></tr>';
+  d.items.forEach(it=>{ h+='<tr><td class="l">'+esc_(it.name)+'</td><td>'+it.done+'</td><td>'+it.undone+'</td><td>'+pct_(it.rate)+'</td></tr>'; });
+  h+='<tr><th class="l">合計</th><th>'+d.overall.done+'</th><th>'+d.overall.undone+'</th><th>'+pct_(d.overall.rate)+'</th></tr></table>';
+
+  h+='<div class="ad-sec">■ 完成率柱狀圖</div>';
+  h+='<div class="ad-chart">'+buildBar_(d.items)+'</div>';
+
+  h+='<div class="ad-sec">■ 同仁結果</div>';
+  h+='<table class="ad"><tr><th class="l">填報人</th><th>應填工作日</th><th>已填</th><th>未填</th><th>合格次數</th><th>合格率</th><th class="l">未填日期</th></tr>';
+  if(d.persons.length){
+    d.persons.forEach(p=>{
+      h+='<tr><td class="l">'+esc_(p.name)+'</td><td>'+p.workDays+'</td><td>'+p.reported+'</td>'
+        +'<td'+(p.missing>0?' class="ad-fail"':'')+'>'+p.missing+'</td><td>'+p.pass+'</td><td>'+pct_(p.passRate)+'</td>'
+        +'<td class="l">'+esc_(p.missingDates.join("、"))+'</td></tr>';
+    });
+  } else h+='<tr><td colspan="7" class="ad-empty">此區間無資料</td></tr>';
+  h+='</table>';
+
+  h+='<div class="ad-sec">■ 回饋明細</div>';
+  const names=d.items.map(it=>it.name);
+  h+='<div class="ad-scroll"><table class="ad"><tr><th>日期</th><th class="l">填報人</th><th>合格</th>';
+  names.forEach(n=> h+='<th>'+esc_(n)+'</th>');
+  h+='</tr>';
+  if(d.detail.length){
+    d.detail.forEach(r=>{
+      h+='<tr><td>'+esc_(r.date)+'</td><td class="l">'+esc_(r.reporter)+'</td>'
+        +'<td class="'+(r.verdict==="合格"?"ad-pass":"ad-fail")+'">'+esc_(r.verdict)+'</td>';
+      r.items.forEach(it=>{ h+='<td class="'+(it.status==="未完成"?"ad-fail":"")+'">'+esc_(it.status)+'</td>'; });
+      h+='</tr>';
+    });
+  } else h+='<tr><td colspan="'+(3+names.length)+'" class="ad-empty">此區間無資料</td></tr>';
+  h+='</table></div>';
+
+  $("adminResult").innerHTML=h;
+}
 
 async function submit(){
   const data=collect();
