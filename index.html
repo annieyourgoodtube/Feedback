@@ -154,6 +154,8 @@
   .ad-pass{color:var(--ok);font-weight:800}
   .ad-scroll{overflow:auto;max-height:360px;border:1px solid var(--line);border-radius:10px}
   .ad-chart{padding:6px 2px 4px}
+  .ad-nodays{color:var(--warn);font-weight:700;line-height:2;padding:4px 2px}
+  .ad-ok{color:var(--ok);font-weight:700;padding:6px 2px}
   .ad-empty{color:var(--muted);padding:18px;text-align:center}
   .foot-org{color:#d9e8ea;font-weight:800;letter-spacing:.16em;font-size:1.5em}
   .foot-credit{color:#9dbabf;font-weight:600;letter-spacing:.06em;margin-top:7px}
@@ -504,16 +506,22 @@ function renderAdmin(d){
   h+='<div class="ad-sec">■ 完成率柱狀圖</div>';
   h+='<div class="ad-chart">'+buildBar_(d.items)+'</div>';
 
-  h+='<div class="ad-sec">■ 同仁結果</div>';
-  h+='<table class="ad"><tr><th class="l">填報人</th><th>應填工作日</th><th>已填</th><th>未填</th><th>合格次數</th><th>合格率</th><th class="l">未填日期</th></tr>';
+  h+='<div class="ad-sec">■ 同仁結果（僅計有回報者）</div>';
+  h+='<table class="ad"><tr><th class="l">填報人</th><th>填報次數</th><th>合格次數</th><th>不合格次數</th><th>合格率</th></tr>';
   if(d.persons.length){
     d.persons.forEach(p=>{
-      h+='<tr><td class="l">'+esc_(p.name)+'</td><td>'+p.workDays+'</td><td>'+p.reported+'</td>'
-        +'<td'+(p.missing>0?' class="ad-fail"':'')+'>'+p.missing+'</td><td>'+p.pass+'</td><td>'+pct_(p.passRate)+'</td>'
-        +'<td class="l">'+esc_(p.missingDates.join("、"))+'</td></tr>';
+      h+='<tr><td class="l">'+esc_(p.name)+'</td><td>'+p.filings+'</td><td>'+p.pass+'</td>'
+        +'<td'+((p.fail>0)?' class="ad-fail"':'')+'>'+p.fail+'</td><td>'+pct_(p.passRate)+'</td></tr>';
     });
-  } else h+='<tr><td colspan="7" class="ad-empty">此區間無資料</td></tr>';
+  } else h+='<tr><td colspan="5" class="ad-empty">此區間無資料</td></tr>';
   h+='</table>';
+
+  h+='<div class="ad-sec">■ 無人填報日（工作日中沒有任何人回報，六日不計）</div>';
+  if(d.noReportDays && d.noReportDays.length){
+    h+='<div class="ad-nodays">'+d.noReportDays.map(x=>esc_(x)).join('　')+'</div>';
+  } else {
+    h+='<div class="ad-ok">此區間每個工作日都有人回報 👍</div>';
+  }
 
   h+='<div class="ad-sec">■ 回饋明細</div>';
   const names=d.items.map(it=>it.name);
